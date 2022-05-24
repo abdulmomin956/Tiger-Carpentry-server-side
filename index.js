@@ -17,6 +17,7 @@ async function run() {
         await client.connect();
 
         const productsCollection = client.db("database").collection("product");
+        const usersCollection = client.db("database").collection("users");
 
         app.post('/products', async (req, res) => {
             const data = req.body;
@@ -27,6 +28,25 @@ async function run() {
         app.get('/products', async (req, res) => {
 
             res.send('good')
+        })
+
+        app.put('/users', async (req, res) => {
+            const doc = req.body;
+            const email = req.body.email;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    email: doc.email
+                },
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
+
+        app.get('/users', async (req, res) => {
+
+            res.send('user section')
         })
 
     }
