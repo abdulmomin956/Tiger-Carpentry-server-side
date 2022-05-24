@@ -20,9 +20,10 @@ async function run() {
 
         app.post('/products', async (req, res) => {
             const data = req.body;
-            console.log(data);
-            res.send('good')
+            const result = await productsCollection.insertOne(data);
+            res.send(result);
         })
+
         app.get('/products', async (req, res) => {
 
             res.send('good')
