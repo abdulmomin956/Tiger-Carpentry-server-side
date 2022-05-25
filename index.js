@@ -2,12 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const res = require('express/lib/response');
 require('dotenv').config();
+const jwt = require('jsonwebtoken')
 const port = process.env.PORT || 5000;
 
 const app = express()
 
+
 app.use(express.json())
 app.use(cors())
+
+
+
+
+
+
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.mb5zre9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -30,18 +38,17 @@ async function run() {
             res.send('good')
         })
 
-        app.put('/users', async (req, res) => {
+        app.put('/users/:email', async (req, res) => {
             const doc = req.body;
-            const email = req.body.email;
+            const email = req.params.email;
             const filter = { email: email };
             const options = { upsert: true };
             const updateDoc = {
-                $set: {
-                    email: doc.email
-                },
+                $set: doc,
             };
             const result = await usersCollection.updateOne(filter, updateDoc, options);
-            res.send(result);
+            const access = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ result, access });
         })
 
         app.get('/users', async (req, res) => {
