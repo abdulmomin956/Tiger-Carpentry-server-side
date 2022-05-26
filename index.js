@@ -16,7 +16,7 @@ app.use(cors())
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.mb5zre9.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -42,15 +42,21 @@ async function run() {
         const productsCollection = client.db("database").collection("product");
         const usersCollection = client.db("database").collection("users");
 
-        app.post('/products', async (req, res) => {
+        app.post('/products', verifyJWT, async (req, res) => {
             const data = req.body;
             const result = await productsCollection.insertOne(data);
             res.send(result);
         })
 
         app.get('/products', async (req, res) => {
-
-            res.send('good')
+            const result = await productsCollection.find({}).toArray()
+            res.send(result)
+        })
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const result = await productsCollection.findOne(filter)
+            res.send(result)
         })
 
         app.put('/users/:email', async (req, res) => {
@@ -62,7 +68,7 @@ async function run() {
                 $set: doc,
             };
             const result = await usersCollection.updateOne(filter, updateDoc, options);
-            const access = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            const access = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
             res.send({ result, access });
         })
 
