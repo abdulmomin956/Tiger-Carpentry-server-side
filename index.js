@@ -3,6 +3,7 @@ const cors = require('cors');
 const res = require('express/lib/response');
 require('dotenv').config();
 const jwt = require('jsonwebtoken')
+const stripe = require("stripe")(process.env.STRIPE_KEY);
 const port = process.env.PORT || 5000;
 
 const app = express()
@@ -105,6 +106,45 @@ async function run() {
             const query = { email: email };
             const data = await ordersCollection.find(query).toArray();
             res.send(data);
+        })
+
+        app.delete('/orders/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const result = await ordersCollection.deleteOne(filter)
+            res.send(result)
+        })
+
+        app.get('/orders/search/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await ordersCollection.findOne(filter);
+            res.send(result);
+        })
+
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+            const { totalAmount } = req.body;
+            const amount = totalAmount * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card']
+            })
+            res.send({ clientSecret: paymentIntent.client_secret, })
+        })
+
+        app.patch('/order/transaction/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const { transactionId } = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    transactionId: transactionId,
+                    paid: 'pending'
+                },
+            };
+            const result = await ordersCollection.updateOne(filter, updateDoc);
+            res.send(result);
         })
 
     }
