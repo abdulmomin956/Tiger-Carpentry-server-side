@@ -100,6 +100,12 @@ async function run() {
             const result = await ordersCollection.insertOne(document);
             res.send(result);
         })
+        app.get('/orders/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const data = await ordersCollection.find(query).toArray();
+            res.send(data);
+        })
 
     }
     finally {
