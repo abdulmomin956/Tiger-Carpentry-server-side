@@ -41,6 +41,7 @@ async function run() {
 
         const productsCollection = client.db("database").collection("product");
         const usersCollection = client.db("database").collection("users");
+        const ordersCollection = client.db("database").collection("orders");
 
         app.post('/products', verifyJWT, async (req, res) => {
             const data = req.body;
@@ -91,6 +92,12 @@ async function run() {
                 },
             };
             const result = await usersCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        app.post('/orders', verifyJWT, async (req, res) => {
+            const document = req.body;
+            const result = await ordersCollection.insertOne(document);
             res.send(result);
         })
 
