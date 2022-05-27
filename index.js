@@ -147,6 +147,23 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/all-orders', verifyJWT, async (req, res) => {
+            const result = await ordersCollection.find({}).toArray()
+            res.send(result);
+        })
+
+        app.patch('/all-orders/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    paid: 'shipped'
+                },
+            };
+            const result = await ordersCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
     }
     finally {
 
