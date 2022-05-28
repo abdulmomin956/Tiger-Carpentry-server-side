@@ -44,6 +44,7 @@ async function run() {
         const usersCollection = client.db("database").collection("users");
         const ordersCollection = client.db("database").collection("orders");
         const reviewsCollection = client.db("database").collection("reviews");
+        const userDetailsCollection = client.db("database").collection("userDetails");
 
         app.post('/products', verifyJWT, async (req, res) => {
             const data = req.body;
@@ -185,6 +186,25 @@ async function run() {
 
         app.get('/reviews', async (req, res) => {
             const result = await reviewsCollection.find({}).toArray();
+            res.send(result)
+        })
+
+        app.put('/userDetail/:email', verifyJWT, async (req, res) => {
+            const email = req.params.id;
+            const filter = { email: email };
+            const document = req.body;
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: document
+            };
+            const result = await userDetailsCollection.updateOne(filter, updateDoc, options)
+            res.send(result)
+        })
+
+        app.get('/userDetail/:email', verifyJWT, async (req, res) => {
+            const email = req.params.id;
+            const filter = { email: email };
+            const result = await userDetailsCollection.findOne(filter);
             res.send(result)
         })
 
