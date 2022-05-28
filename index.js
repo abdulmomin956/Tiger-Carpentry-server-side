@@ -43,6 +43,7 @@ async function run() {
         const productsCollection = client.db("database").collection("product");
         const usersCollection = client.db("database").collection("users");
         const ordersCollection = client.db("database").collection("orders");
+        const reviewsCollection = client.db("database").collection("reviews");
 
         app.post('/products', verifyJWT, async (req, res) => {
             const data = req.body;
@@ -173,6 +174,17 @@ async function run() {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await productsCollection.deleteOne(filter);
+            res.send(result)
+        })
+
+        app.post('/reviews', verifyJWT, async (req, res) => {
+            const document = req.body;
+            const result = await reviewsCollection.insertOne(document);
+            res.send(result);
+        })
+
+        app.get('/reviews', async (req, res) => {
+            const result = await reviewsCollection.find({}).toArray();
             res.send(result)
         })
 
