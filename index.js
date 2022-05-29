@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const res = require('express/lib/response');
 require('dotenv').config();
 const jwt = require('jsonwebtoken')
 const stripe = require("stripe")(process.env.STRIPE_KEY);
@@ -190,19 +189,20 @@ async function run() {
         })
 
         app.put('/userDetail/:email', verifyJWT, async (req, res) => {
-            const email = req.params.id;
+            const doc = req.body;
+            const email = req.params.email;
             const filter = { email: email };
-            const document = req.body;
             const options = { upsert: true };
             const updateDoc = {
-                $set: document
+                $set: doc,
             };
-            const result = await userDetailsCollection.updateOne(filter, updateDoc, options)
-            res.send(result)
+            const result = await userDetailsCollection.updateOne(filter, updateDoc, options);
+
+            res.send(result);
         })
 
         app.get('/userDetail/:email', verifyJWT, async (req, res) => {
-            const email = req.params.id;
+            const email = req.params.email;
             const filter = { email: email };
             const result = await userDetailsCollection.findOne(filter);
             res.send(result)
