@@ -96,7 +96,7 @@ async function run() {
             res.send(result)
         })
 
-        app.patch('/users/:email', async (req, res) => {
+        app.patch('/users/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
@@ -105,6 +105,13 @@ async function run() {
                 },
             };
             const result = await usersCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        app.delete('/users/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email }
+            const result = await usersCollection.deleteOne(filter)
             res.send(result);
         })
 
