@@ -62,6 +62,17 @@ async function run() {
             res.send(result)
         })
 
+        app.patch('/products/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const document = req.body;
+            const filter = { _id: ObjectId(id) }
+            const upDoc = {
+                $set: document
+            }
+            const result = await productsCollection.updateOne(filter, upDoc)
+            res.send(result)
+        })
+
         app.put('/users/:email', async (req, res) => {
             const doc = req.body;
             const email = req.params.email;
